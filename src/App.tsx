@@ -1,14 +1,8 @@
-import { useEffect, useRef, } from 'react';
+import { useEffect, } from 'react';
 import io from 'socket.io-client';
-import Board from './pages/board';
+import Board from './pages/Board';
 
-interface CanvasProps {
-  width: number;
-  height: number;
-}
-
-function App({ width, height }: CanvasProps) {
-  // const [count, setCount] = useState(0)
+export default function App() {
 
   useEffect(() => {
     socket.emit('test', 'ddfskdk');
@@ -18,20 +12,10 @@ function App({ width, height }: CanvasProps) {
 
   console.log(socket);
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   return (
     <div className="App">
-      <canvas ref={canvasRef} height={height} width={width} className="canvas"/>
-
       <Board />
     </div>
   );
 }
-
-App.defaultProps = {
-  width: 800,
-  height: 600
-};
-
-export default App;
