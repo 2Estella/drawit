@@ -1,19 +1,27 @@
 import { useState, useRef } from 'react';
-import { Stage, Layer, Line, Text } from 'react-konva';
+import { Stage, Layer, Line, } from 'react-konva';
 import { ChromePicker } from 'react-color';
 import { css } from '@emotion/react';
 import { KonvaEventObject } from 'konva/lib/Node';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPen, faEraser, faArrowRotateRight, faArrowRotateLeft } from '@fortawesome/free-solid-svg-icons';
+
+interface Point {
+  x: number
+  y: number
+}
 
 interface LinesItem {
   tool: string
   color?: string
-  points: number[]
+  points: Point[]
 }
 
 export default function Board() {
   const [color, setColor] = useState<string>('#000');
   const [tool, setTool] = useState<string>('pen');
   const [lines, setLines] = useState<LinesItem[]>([]);
+  const [tempPoints] = useState<Point[][]>([]);
 
   const isDrawing = useRef(false);
 
@@ -21,7 +29,7 @@ export default function Board() {
     isDrawing.current = true;
     const pos = e.target.getStage()?.getPointerPosition() ?? {x: 0, y: 0};
 
-    setLines([...lines, { tool, points: [pos.x , pos.y] }]);
+    setLines([...lines, { tool, points: [{x: pos.x , y: pos.y}] }]);
   };
 
   const handleMouseMove = (e: KonvaEventObject<MouseEvent> | KonvaEventObject<TouchEvent>) => {
@@ -33,7 +41,7 @@ export default function Board() {
     const point = stage?.getPointerPosition() ?? {x: 0, y: 0};
     const lastLine = lines[lines.length - 1];
 
-    lastLine.points = lastLine.points.concat([point.x, point.y]);
+    lastLine.points.push({ x: point.x, y: point.y });
     lastLine.color = color;
 
     lines.splice(lines.length - 1, 1, lastLine);
@@ -49,6 +57,29 @@ export default function Board() {
     setColor(newColor);
   };
 
+  const handleUndo = () => {
+    if (!lines.length) {
+      return;
+    }
+
+    const lastLine = lines[lines.length - 1];
+    const newLines = lines.slice(0, lines.length - 1);
+
+    tempPoints.push(lastLine.points);
+
+    setLines(newLines);
+  };
+
+  const handleRedo = () => {
+    if (!tempPoints.length) {
+      return;
+    }
+
+    const newLine = { tool, points: tempPoints.pop(), color };
+
+    setLines([...lines, newLine as LinesItem]);
+  };
+
   /**
    * Style
    */
@@ -58,6 +89,9 @@ export default function Board() {
 
   const toolRightStyle = css`
     width: 10%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   `;
 
   const toolLeftStyle = css`
@@ -71,15 +105,26 @@ export default function Board() {
   return (
     <div className="boardContainer" css={containerStyle}>
       <div className="toolRight" css={toolRightStyle}>
-        <select
-          value={tool}
-          onChange={(e) => {
-            setTool(e.target.value);
-          }}
-        >
-          <option value="pen">Pen</option>
-          <option value="eraser">Eraser</option>
-        </select>
+        <FontAwesomeIcon
+          icon={faPen}
+          size={'xl'}
+          onClick={() => setTool('pen')}
+        />
+        <FontAwesomeIcon
+          icon={faEraser}
+          size={'xl'}
+          onClick={() => setTool('eraser')}
+        />
+        <FontAwesomeIcon
+          icon={faArrowRotateLeft}
+          size={'xl'}
+          onClick={handleUndo}
+        />
+        <FontAwesomeIcon
+          icon={faArrowRotateRight}
+          size={'xl'}
+          onClick={handleRedo}
+        />
       </div>
 
       <Stage
@@ -97,11 +142,11 @@ export default function Board() {
         onTouchEnd={handleMouseUp}
       >
         <Layer>
-          <Text text="Just start drawing" x={5} y={30} />
+          {/* <Text text="Just start drawing" x={5} y={30} /> */}
           {lines.map((line, i) => (
             <Line
               key={i}
-              points={line.points}
+              points={line.points.map((point) => [point.x, point.y]).flat()}
               stroke={line.color}
               strokeWidth={5}
               tension={0.5}
