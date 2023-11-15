@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Stage, Layer, Line, } from 'react-konva';
-import { ChromePicker } from 'react-color';
+import { SketchPicker  } from 'react-color';
 import { css } from '@emotion/react';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -21,7 +21,7 @@ export default function Board() {
   const [color, setColor] = useState<string>('#000');
   const [tool, setTool] = useState<string>('pen');
   const [lines, setLines] = useState<LinesItem[]>([]);
-  const [tempPoints] = useState<Point[][]>([]);
+  const [history, setHistory] = useState<LinesItem[][]>([]);
 
   const isDrawing = useRef(false);
 
@@ -65,19 +65,22 @@ export default function Board() {
     const lastLine = lines[lines.length - 1];
     const newLines = lines.slice(0, lines.length - 1);
 
-    tempPoints.push(lastLine.points);
+    setHistory([...history, [lastLine]]);
 
     setLines(newLines);
   };
 
   const handleRedo = () => {
-    if (!tempPoints.length) {
+    if (!history.length) {
       return;
     }
 
-    const newLine = { tool, points: tempPoints.pop(), color };
+    const lastLine = history[history.length - 1];
+    const newLines = lines.concat(lastLine);
+    const newHistory = history.slice(0, history.length - 1);
 
-    setLines([...lines, newLine as LinesItem]);
+    setLines(newLines);
+    setHistory(newHistory);
   };
 
   /**
@@ -96,6 +99,9 @@ export default function Board() {
 
   const toolLeftStyle = css`
     width: 25%
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   `;
 
   const boardStyle = css`
@@ -130,7 +136,7 @@ export default function Board() {
       <Stage
         className="board"
         css={boardStyle}
-        width={700}
+        width={580}
         height={500}
         // width={window.innerWidth}
         // height={window.innerHeight}
@@ -161,10 +167,14 @@ export default function Board() {
       </Stage>
 
       <div className="toolLeft" css={toolLeftStyle}>
-        <ChromePicker
+        <SketchPicker
           color={color}
           onChange={color => handleColorChange(color.hex)}
         />
+        <div>size</div>
+        <div>opacity</div>
+        <div>stabilizer</div>
+        <div>shape</div>
       </div>
     </div>
   );
