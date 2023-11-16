@@ -1,10 +1,12 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Stage, Layer, Line, } from 'react-konva';
 import { SketchPicker  } from 'react-color';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faEraser, faArrowRotateRight, faArrowRotateLeft, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { boardStyle, containerStyle, toolLeftStyle, toolRightStyle } from '../assets/styles/pages/Board';
+
+import io from 'socket.io-client';
 
 interface Point {
   x: number
@@ -19,6 +21,8 @@ interface LinesItem {
   opacity?: number
 }
 
+const socket = io('http://localhost:8080', { query: {sessionId: 'test'}});
+
 export default function Board() {
   const [color, setColor] = useState<string>('#000');
   const [tool, setTool] = useState<string>('pen');
@@ -31,6 +35,18 @@ export default function Board() {
   const [shape, setShape] = useState(100);
 
   const isDrawing = useRef(false);
+
+  useEffect(() => {
+    socket.on('draw', (newLines) => {
+      setLines(newLines);
+    });
+
+    // 언마운트될 때 종료
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
 
   /**
    * 그림판 클릭(터치) 시작 시 액션
@@ -73,6 +89,8 @@ export default function Board() {
    */
   const handleMouseUp = () => {
     isDrawing.current = false;
+    // 그려진 라인 서버로 전달
+    socket.emit('draw', lines);
   };
 
   /**
@@ -153,27 +171,22 @@ export default function Board() {
           onMouseLeave={handleMouseUp}
         >
           <Layer>
-            {/* <Text text="Just start drawing" x={5} y={30} /> */}
-            {lines.map((line, i) => (
-              <Line
-                key={i}
-                points={line.points.map((point) => [point.x, point.y]).flat()}
-                stroke={line.color}
-                strokeWidth={line.size}
-                tension={0.5}
-                opacity={line.opacity}
-                // dash={[1, 1]}
-                // shadowColor={line.color}
-                // shadowBlur={20}
-                // shadowOpacity={1} // 0 to 1
-                // shadowOffset= {{x: 5, y: 10}}
-                lineCap="round" // butt, round, or square
-                lineJoin="miter" // miter, round, or bevel
-                globalCompositeOperation={
-                  line.tool === 'eraser' ? 'destination-out' : 'source-over'
-                }
-              />
-            ))}
+            {lines.length > 0 &&
+              lines.map((line, i) => (
+                <Line
+                  key={i}
+                  points={line.points.map((point) => [point.x, point.y]).flat()}
+                  stroke={line.color}
+                  strokeWidth={line.size}
+                  tension={0.5}
+                  opacity={line.opacity}
+                  lineCap="round"
+                  lineJoin="miter"
+                  globalCompositeOperation={
+                    line.tool === 'eraser' ? 'destination-out' : 'source-over'
+                  }
+                />
+              ))}
           </Layer>
         </Stage>
       </div>
