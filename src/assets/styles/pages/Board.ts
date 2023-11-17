@@ -8,7 +8,7 @@ export const containerStyle = css`
 export const toolLeftStyle = css`
   width: 55px;
   min-width: 55px;
-  height: 100vh;
+  // height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,7 +26,7 @@ export const toolLeftStyle = css`
 `;
 
 export const toolRightStyle = css`
-  width: 30%
+  width: 250px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -85,14 +85,29 @@ export const toolRightStyle = css`
 
 export const boardStyle = css`
   width: 68%;
-  padding: 30px;
+  min-width: 1000px;
+  flex: 1 0 0;
+  padding: 80px 30px 30px;
   background: ${Common.colors.boardBackground};
 
   .board {
-    width: 100%;
-    max-width: 100%;
+    width: 800px;
     height: 500px;
+    margin: 0 auto;
     background: #fff;
     overflow: hidden;
+  }
+`;
+
+
+export const chatStyle = css`
+  background: #ccc;
+  height: 353px;
+  padding: 20px 20px;
+
+  & > div {
+    background: #fff;
+    height: 20vh;
+
   }
 `;

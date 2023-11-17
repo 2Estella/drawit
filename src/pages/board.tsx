@@ -4,7 +4,7 @@ import { SketchPicker  } from 'react-color';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faEraser, faArrowRotateRight, faArrowRotateLeft, faTrashCan } from '@fortawesome/free-solid-svg-icons';
-import { boardStyle, containerStyle, toolLeftStyle, toolRightStyle } from '../assets/styles/pages/Board';
+import { boardStyle, chatStyle, containerStyle, toolLeftStyle, toolRightStyle } from '../assets/styles/pages/Board';
 
 import io from 'socket.io-client';
 
@@ -34,6 +34,8 @@ export default function Board() {
   const [stabilizer, setStabilizer] = useState(10);
   const [shape, setShape] = useState(100);
 
+  const [chatData, setChatData] = useState<string[]>([]);
+
   const isDrawing = useRef(false);
 
   useEffect(() => {
@@ -41,9 +43,15 @@ export default function Board() {
       setLines(newLines);
     });
 
+    socket.on('chat', (newMessage) => {
+      setChatData([...chatData, newMessage]);
+    });
+
     // 언마운트될 때 종료
     return () => {
-      socket.disconnect();
+      if (socket.connected) {
+        socket.disconnect();
+      }
     };
   }, []);
 
@@ -132,7 +140,18 @@ export default function Board() {
     setLines([]);
   };
 
+
+  const [chatMsg, setChatMsg] = useState('');
+
+  const handleChat = (e) => {
+    if(e.key === 'Enter') {
+      socket.emit('chat', chatMsg);
+      setChatMsg('');
+    }
+  };
+
   return (
+    <>
     <div className="boardContainer" css={containerStyle}>
       <div className="toolLeft" css={toolLeftStyle}>
         <FontAwesomeIcon
@@ -242,5 +261,19 @@ export default function Board() {
         </label>
       </div>
     </div>
+
+    <div className="chatContainer" css={chatStyle}>
+      <div>
+        {chatData.length > 0 &&
+          chatData.map((item, i) => (
+            <div key={i}>{item}</div>
+          ))
+        }
+      </div>
+
+      <input type="text" name="chatMsg" value={chatMsg} onKeyUp={handleChat} onChange={e => setChatMsg(e.target.value)} />
+      <button type="button" onClick={handleChat}>전송</button>
+    </div>
+    </>
   );
 }
