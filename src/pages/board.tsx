@@ -35,6 +35,7 @@ export default function Board() {
   const [shape, setShape] = useState(100);
 
   const [chatData, setChatData] = useState<string[]>([]);
+  const [message, setMessage] = useState<string>('');
 
   const isDrawing = useRef(false);
 
@@ -43,8 +44,9 @@ export default function Board() {
       setLines(newLines);
     });
 
-    socket.on('chat', (newMessage) => {
-      setChatData([...chatData, newMessage]);
+    socket.on('chat', (newMessages) => {
+      const newMessage = Array.isArray(newMessages) ? newMessages[0] : newMessages;
+      setMessage(newMessage);
     });
 
     // 언마운트될 때 종료
@@ -54,6 +56,12 @@ export default function Board() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (message) {
+      setChatData([...chatData, message]);
+    }
+  }, [message]);
 
 
   /**
