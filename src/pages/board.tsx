@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, } from 'react';
 import { Stage, Layer, Line, } from 'react-konva';
 import { SketchPicker  } from 'react-color';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faEraser, faArrowRotateRight, faArrowRotateLeft, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { boardStyle, chatStyle, containerStyle, toolLeftStyle, toolRightStyle } from '../assets/styles/pages/Board';
-
 import io from 'socket.io-client';
+import NicknameModal from '../components/NicknameModal';
 
 interface Point {
   x: number
@@ -24,6 +24,8 @@ interface LinesItem {
 const socket = io('http://localhost:8080', { query: {sessionId: 'test'}});
 
 export default function Board() {
+  const isDrawing = useRef(false);
+
   const [color, setColor] = useState<string>('#000');
   const [tool, setTool] = useState<string>('pen');
   const [lines, setLines] = useState<LinesItem[]>([]);
@@ -35,9 +37,10 @@ export default function Board() {
   const [shape, setShape] = useState(100);
 
   const [chatData, setChatData] = useState<string[]>([]);
-  const [message, setMessage] = useState<string>('');
+  const [newMessage, setNewMessage] = useState<string>('');
+  const [chatMsg, setChatMsg] = useState('');
 
-  const isDrawing = useRef(false);
+  const [nickname, setNickname] = useState('');
 
   useEffect(() => {
     socket.on('draw', (newLines) => {
@@ -46,7 +49,7 @@ export default function Board() {
 
     socket.on('chat', (newMessages) => {
       const newMessage = Array.isArray(newMessages) ? newMessages[0] : newMessages;
-      setMessage(newMessage);
+      setNewMessage(newMessage);
     });
 
     // 언마운트될 때 종료
@@ -58,10 +61,10 @@ export default function Board() {
   }, []);
 
   useEffect(() => {
-    if (message) {
-      setChatData([...chatData, message]);
+    if (newMessage) {
+      setChatData([...chatData, newMessage]);
     }
-  }, [message]);
+  }, [newMessage]);
 
 
   /**
@@ -110,7 +113,7 @@ export default function Board() {
   };
 
   /**
-   * 되돌리기
+   * 그리기 되돌리기
    */
   const handleUndo = () => {
     if (!lines.length) {
@@ -125,7 +128,7 @@ export default function Board() {
   };
 
   /**
-   * 실행취소
+   * 그리기 실행취소
    */
   const handleRedo = () => {
     if (!history.length) {
@@ -148,140 +151,164 @@ export default function Board() {
     setLines([]);
   };
 
-
-  const [chatMsg, setChatMsg] = useState('');
-
-  const handleChat = (e) => {
-    if(e.key === 'Enter') {
-      socket.emit('chat', chatMsg);
-      setChatMsg('');
+  const handleChat = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if(e.key && e.key === 'Enter') {
+      emitChatMsg();
     }
+  };
+
+  const emitChatMsg = () => {
+    socket.emit('chat', chatMsg);
+    setChatMsg('');
+
+    const chatBox = document.querySelector('.chatBox');
+    if (chatBox) {
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  };
+
+  const [isOpenModal, setIsOpenModal] = useState(false);
+
+  // const openModal = () => {
+  //   setIsOpenModal(true);
+  // };
+
+  const closeModal = (nickname?: string) => {
+    setNickname(nickname ?? '');
+    setIsOpenModal(false);
   };
 
   return (
     <>
-    <div className="boardContainer" css={containerStyle}>
-      <div className="toolLeft" css={toolLeftStyle}>
-        <FontAwesomeIcon
-          icon={faPen}
-          onClick={() => [setTool('pen'), setHistory(history.slice(0, history.length - 1))]}
-        />
-        <FontAwesomeIcon
-          icon={faEraser}
-          onClick={() => [setTool('eraser'), setHistory(history.slice(0, history.length - 1))]}
-        />
-        <FontAwesomeIcon
-          icon={faArrowRotateLeft}
-          onClick={handleUndo}
-        />
-        <FontAwesomeIcon
-          icon={faArrowRotateRight}
-          onClick={handleRedo}
-        />
-        <FontAwesomeIcon
-          icon={faTrashCan}
-          onClick={handleReset}
-        />
+      <div className="boardContainer" css={containerStyle}>
+        <div className="toolLeft" css={toolLeftStyle}>
+          <FontAwesomeIcon
+            icon={faPen}
+            onClick={() => [setTool('pen'), setHistory(history.slice(0, history.length - 1))]}
+          />
+          <FontAwesomeIcon
+            icon={faEraser}
+            onClick={() => [setTool('eraser'), setHistory(history.slice(0, history.length - 1))]}
+          />
+          <FontAwesomeIcon
+            icon={faArrowRotateLeft}
+            onClick={handleUndo}
+          />
+          <FontAwesomeIcon
+            icon={faArrowRotateRight}
+            onClick={handleRedo}
+          />
+          <FontAwesomeIcon
+            icon={faTrashCan}
+            onClick={handleReset}
+          />
+        </div>
+
+        <div css={boardStyle}>
+          <Stage
+            className="board"
+            width={window.innerWidth}
+            height={window.innerHeight}
+            onMouseDown={handleMouseDown}
+            onMousemove={handleMouseMove}
+            onMouseup={handleMouseUp}
+            onTouchStart={handleMouseDown}
+            onTouchMove={handleMouseMove}
+            onTouchEnd={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            <Layer>
+              {lines.length > 0 &&
+                lines.map((line, i) => (
+                  <Line
+                    key={i}
+                    points={line.points.map((point) => [point.x, point.y]).flat()}
+                    stroke={line.color}
+                    strokeWidth={line.size}
+                    tension={0.5}
+                    opacity={line.opacity}
+                    lineCap="round"
+                    lineJoin="miter"
+                    globalCompositeOperation={
+                      line.tool === 'eraser' ? 'destination-out' : 'source-over'
+                    }
+                  />
+                ))}
+            </Layer>
+          </Stage>
+        </div>
+
+        <div className="toolRight" css={toolRightStyle}>
+          <SketchPicker
+            color={color}
+            onChange={color => setColor(color.hex)}
+          />
+          <label>
+            <span>Size: </span>
+            <input
+              type="range"
+              value={size}
+              min="1"
+              max="100"
+              step="1"
+              onChange={e => setSize(Number(e.target.value))}
+            />
+          </label>
+          <label>
+            <span>Opacity: </span>
+            <input
+              type="range"
+              value={opacity}
+              min="0.1"
+              max="1"
+              step="0.01"
+              onChange={e => setOpacity(Number(e.target.value))}
+            />
+          </label>
+          <label>
+            <span>Stabilizer: </span>
+            <input
+              type="range"
+              value={stabilizer}
+              min="1"
+              max="100"
+              step="1"
+              onChange={e => setStabilizer(Number(e.target.value))}
+            />
+          </label>
+          <label>
+            <span>Shape: </span>
+            <input
+              type="range"
+              value={shape}
+              min="1"
+              max="100"
+              step="1"
+              onChange={e => setShape(Number(e.target.value))}
+            />
+          </label>
+        </div>
       </div>
 
-      <div css={boardStyle}>
-        <Stage
-          className="board"
-          width={window.innerWidth}
-          height={window.innerHeight}
-          onMouseDown={handleMouseDown}
-          onMousemove={handleMouseMove}
-          onMouseup={handleMouseUp}
-          onTouchStart={handleMouseDown}
-          onTouchMove={handleMouseMove}
-          onTouchEnd={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        >
-          <Layer>
-            {lines.length > 0 &&
-              lines.map((line, i) => (
-                <Line
-                  key={i}
-                  points={line.points.map((point) => [point.x, point.y]).flat()}
-                  stroke={line.color}
-                  strokeWidth={line.size}
-                  tension={0.5}
-                  opacity={line.opacity}
-                  lineCap="round"
-                  lineJoin="miter"
-                  globalCompositeOperation={
-                    line.tool === 'eraser' ? 'destination-out' : 'source-over'
-                  }
-                />
-              ))}
-          </Layer>
-        </Stage>
+      <div className="chatContainer" css={chatStyle}>
+        <div className="chatBox">
+          {chatData.length > 0 &&
+            chatData.map((item, i) => (
+              <div key={i}>{item}</div>
+            ))
+          }
+        </div>
+
+        <input type="text" name="chatMsg" value={chatMsg} onKeyUp={handleChat} onChange={e => setChatMsg(e.target.value)} />
+        <button type="button" onClick={emitChatMsg}>전송</button>
       </div>
 
-      <div className="toolRight" css={toolRightStyle}>
-        <SketchPicker
-          color={color}
-          onChange={color => setColor(color.hex)}
-        />
-        <label>
-          <span>Size: </span>
-          <input
-            type="range"
-            value={size}
-            min="1"
-            max="100"
-            step="1"
-            onChange={e => setSize(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          <span>Opacity: </span>
-          <input
-            type="range"
-            value={opacity}
-            min="0.1"
-            max="1"
-            step="0.01"
-            onChange={e => setOpacity(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          <span>Stabilizer: </span>
-          <input
-            type="range"
-            value={stabilizer}
-            min="1"
-            max="100"
-            step="1"
-            onChange={e => setStabilizer(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          <span>Shape: </span>
-          <input
-            type="range"
-            value={shape}
-            min="1"
-            max="100"
-            step="1"
-            onChange={e => setShape(Number(e.target.value))}
-          />
-        </label>
-      </div>
-    </div>
-
-    <div className="chatContainer" css={chatStyle}>
-      <div>
-        {chatData.length > 0 &&
-          chatData.map((item, i) => (
-            <div key={i}>{item}</div>
-          ))
-        }
-      </div>
-
-      <input type="text" name="chatMsg" value={chatMsg} onKeyUp={handleChat} onChange={e => setChatMsg(e.target.value)} />
-      <button type="button" onClick={handleChat}>전송</button>
-    </div>
+      <NicknameModal
+        width={'400px'}
+        height={'300px'}
+        isOpen={isOpenModal}
+        onClose={closeModal}
+      />
     </>
   );
 }

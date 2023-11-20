@@ -99,7 +99,6 @@ export const boardStyle = css`
   }
 `;
 
-
 export const chatStyle = css`
   background: #ccc;
   height: 353px;
@@ -108,6 +107,6 @@ export const chatStyle = css`
   & > div {
     background: #fff;
     height: 20vh;
-
+    overflow-y: scroll;
   }
 `;
