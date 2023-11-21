@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { css } from '@emotion/react';
 import Modal from './common/Modal';
+import { Common } from '../assets/styles/Common';
 
 interface NicknameModalProps {
   width: string
@@ -8,7 +9,6 @@ interface NicknameModalProps {
   isOpen: boolean
   onClose: (nickname?: string) => void
 }
-
 export default function NicknameModal({ width, height, isOpen, onClose }: NicknameModalProps) {
   const [nickname, setNickname] = useState('');
 
@@ -23,10 +23,28 @@ export default function NicknameModal({ width, height, isOpen, onClose }: Nickna
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
+    height: 100%;
 
     span {
       display: block;
-      margin-bottom: 20px;
+      margin: 20px 0;
+    }
+
+    input[type='text'] {
+      width: 90%;
+      height: 35px;
+      border: none;
+      border-bottom: 1px solid ${Common.colors.colorPickerBackground};
+    }
+
+    button {
+      width: 100%;
+      margin: 20px 0 15px;
+      padding: 10px 20px;
+      border: 1px solid ${Common.colors.colorPickerBackground};
+      border-radius: 5px;
+      background: ${Common.colors.colorPickerBackground};
+      color: #fff;
     }
   `;
 
@@ -37,7 +55,7 @@ export default function NicknameModal({ width, height, isOpen, onClose }: Nickna
   return (
     <Modal width={width} height={height}>
       <div css={modalStyle}>
-        <span>사용하실 닉네임을 입력해주세요.</span>
+        <span>사용할 닉네임을 입력해주세요.</span>
 
         <input
           type="text"
