@@ -107,13 +107,46 @@ export const boardStyle = css`
 `;
 
 export const chatStyle = css`
-  background: #ccc;
+  background: #7C7C7C;
   height: 353px;
   padding: 20px 10px;
 
-  & > div {
+  .chatBox {
     background: #fff;
-    height: 20vh;
+    height: 21vh;
     overflow-y: scroll;
+  }
+
+  .inputBox {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+
+    textarea {
+      resize: none;
+      height: 70px;
+      padding: 5px;
+      border: 0;
+      border-radius: 5px;
+      font-size: 13px;
+
+      &::placeholder {
+        font-size: 12px;
+      }
+    }
+
+    button {
+      width: 50px;
+      margin-top: 10px;
+      margin-left: auto;
+      padding: 8px;
+      background: ${Common.colors.toolBackground};
+      color: #fff;
+      font-size: 14px;
+    }
+  }
+
+  .color-blue {
+    color: blue;
   }
 `;

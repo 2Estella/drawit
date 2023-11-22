@@ -21,11 +21,32 @@ interface LinesItem {
   opacity?: number
 }
 
-const socket = io('http://localhost:8080', { query: {sessionId: 'test'}});
+interface ChatMsgItem {
+  message: string
+  isSender: boolean
+  nickname: string
+}
+
+interface UserInfoType {
+  nickname: string
+  room: {
+    roomId: string
+    name: string
+  }
+}
+
+const socket = io('http://localhost:8080');
 
 export default function Board() {
-  const isDrawing = useRef(false);
+  const [userInfo, setUserInfo] = useState({
+    nickname: '',
+    room: {
+      roomId: '',
+      name: '',
+    },
+  });
 
+  const isDrawing = useRef(false);
   const [color, setColor] = useState<string>('#000');
   const [tool, setTool] = useState<string>('pen');
   const [lines, setLines] = useState<LinesItem[]>([]);
@@ -36,24 +57,29 @@ export default function Board() {
   const [stabilizer, setStabilizer] = useState(10);
   const [shape, setShape] = useState(100);
 
-  const [chatData, setChatData] = useState<string[]>([]);
-  const [newMessage, setNewMessage] = useState<string>('');
+  const [chatData, setChatData] = useState<ChatMsgItem[]>([]);
   const [chatMsg, setChatMsg] = useState('');
 
-  const [nickname, setNickname] = useState('');
+  const [isOpenModal, setIsOpenModal] = useState(true);
 
   useEffect(() => {
-    socket.on('draw', (newLines) => {
-      setLines(newLines);
-    });
+    if (userInfo.nickname) {
+      // TODO: 로컬스토리지에 저장된 닉네임 가져오기
+      setIsOpenModal(true);
+    }
 
-    socket.on('chat', (newMessages) => {
-      const newMessage = Array.isArray(newMessages) ? newMessages[0] : newMessages;
-      setNewMessage(newMessage);
+    socket.on('getMessage', handleGetMessage);
+    socket.on('getDrawLines', (data) => {
+      setLines(data);
     });
 
     // 언마운트될 때 종료
     return () => {
+      socket.off('getMessage', handleGetMessage);
+      socket.off('getDrawLines', (data) => {
+        setLines(data);
+      });
+
       if (socket.connected) {
         socket.disconnect();
       }
@@ -61,11 +87,17 @@ export default function Board() {
   }, []);
 
   useEffect(() => {
-    if (newMessage) {
-      setChatData([...chatData, newMessage]);
+    const chatBox = document.querySelector('.chatBox');
+    if (chatBox) {
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
-  }, [newMessage]);
+  }, [chatData]);
 
+  const handleGetMessage = (data) => {
+    const { id, nickname, message } = data;
+    const isSender = socket.id === id;
+    setChatData((prevChatData) => [...prevChatData, { isSender, message, nickname }]);
+  };
 
   /**
    * 그림판 클릭(터치) 시작 시 액션
@@ -109,7 +141,7 @@ export default function Board() {
   const handleMouseUp = () => {
     isDrawing.current = false;
     // 그려진 라인 서버로 전달
-    socket.emit('draw', lines);
+    socket.emit('sendDrawLines', lines);
   };
 
   /**
@@ -151,30 +183,26 @@ export default function Board() {
     setLines([]);
   };
 
-  const handleChat = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleChat = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if(e.key && e.key === 'Enter') {
-      emitChatMsg();
+      sendChatMessage();
     }
   };
 
-  const emitChatMsg = () => {
-    socket.emit('chat', chatMsg);
+  const sendChatMessage = () => {
+    socket.emit('sendMessage', chatMsg);
     setChatMsg('');
-
-    const chatBox = document.querySelector('.chatBox');
-    if (chatBox) {
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
   };
-
-  const [isOpenModal, setIsOpenModal] = useState(false);
 
   // const openModal = () => {
   //   setIsOpenModal(true);
   // };
 
   const closeModal = (nickname?: string) => {
-    setNickname(nickname ?? '');
+    socket.emit('setInit', {nickname, id: socket.id }, (response: UserInfoType) => {
+      setUserInfo(response);
+    });
+
     setIsOpenModal(false);
   };
 
@@ -239,73 +267,81 @@ export default function Board() {
         </div>
 
         <div className="toolRight" css={toolRightStyle}>
-          <SketchPicker
-            color={color}
-            onChange={color => setColor(color.hex)}
-          />
-          <label>
-            <span>Size: </span>
-            <input
-              type="range"
-              value={size}
-              min="1"
-              max="100"
-              step="1"
-              onChange={e => setSize(Number(e.target.value))}
+          <div className="tools">
+            <SketchPicker
+              color={color}
+              onChange={color => setColor(color.hex)}
             />
-          </label>
-          <label>
-            <span>Opacity: </span>
-            <input
-              type="range"
-              value={opacity}
-              min="0.1"
-              max="1"
-              step="0.01"
-              onChange={e => setOpacity(Number(e.target.value))}
-            />
-          </label>
-          <label>
-            <span>Stabilizer: </span>
-            <input
-              type="range"
-              value={stabilizer}
-              min="1"
-              max="100"
-              step="1"
-              onChange={e => setStabilizer(Number(e.target.value))}
-            />
-          </label>
-          <label>
-            <span>Shape: </span>
-            <input
-              type="range"
-              value={shape}
-              min="1"
-              max="100"
-              step="1"
-              onChange={e => setShape(Number(e.target.value))}
-            />
-          </label>
-        </div>
-      </div>
+            <label>
+              <span>Size: </span>
+              <input
+                type="range"
+                value={size}
+                min="1"
+                max="100"
+                step="1"
+                onChange={e => setSize(Number(e.target.value))}
+              />
+            </label>
+            <label>
+              <span>Opacity: </span>
+              <input
+                type="range"
+                value={opacity}
+                min="0.1"
+                max="1"
+                step="0.01"
+                onChange={e => setOpacity(Number(e.target.value))}
+              />
+            </label>
+            <label>
+              <span>Stabilizer: </span>
+              <input
+                type="range"
+                value={stabilizer}
+                min="1"
+                max="100"
+                step="1"
+                onChange={e => setStabilizer(Number(e.target.value))}
+              />
+            </label>
+            <label>
+              <span>Shape: </span>
+              <input
+                type="range"
+                value={shape}
+                min="1"
+                max="100"
+                step="1"
+                onChange={e => setShape(Number(e.target.value))}
+              />
+            </label>
+          </div>
 
-      <div className="chatContainer" css={chatStyle}>
-        <div className="chatBox">
-          {chatData.length > 0 &&
-            chatData.map((item, i) => (
-              <div key={i}>{item}</div>
-            ))
-          }
+          <div className="chatContainer" css={chatStyle}>
+            <div className="chatBox">
+              {chatData.length > 0 &&
+                chatData.map((item, i) => (
+                  <div className={item.isSender ? 'color-blue' : ''} key={i}>{item.nickname}: {item.message}</div>
+                ))
+              }
+            </div>
+            <div className="inputBox">
+              <textarea
+                value={chatMsg}
+                placeholder="메세지를 입력해주세요."
+                onKeyUp={handleChat} onChange={e => setChatMsg(e.target.value)}
+              >
+              </textarea>
+              <button type="button" onClick={sendChatMessage}>전송</button>
+            </div>
+          </div>
         </div>
-
-        <input type="text" name="chatMsg" value={chatMsg} onKeyUp={handleChat} onChange={e => setChatMsg(e.target.value)} />
-        <button type="button" onClick={emitChatMsg}>전송</button>
       </div>
 
       <NicknameModal
-        width={'400px'}
-        height={'300px'}
+        width={'350px'}
+        height={'250px'}
         isOpen={isOpenModal}
         onClose={closeModal}
       />
