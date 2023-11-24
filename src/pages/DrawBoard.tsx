@@ -1,12 +1,13 @@
-import { useState, useRef, useEffect, } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
 import { Stage, Layer, Line, } from 'react-konva';
 import { SketchPicker  } from 'react-color';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faEraser, faArrowRotateRight, faArrowRotateLeft, faTrashCan } from '@fortawesome/free-solid-svg-icons';
-import { boardStyle, chatStyle, containerStyle, toolLeftStyle, toolRightStyle } from '../assets/styles/pages/Board';
-import io from 'socket.io-client';
+import { boardStyle, containerStyle, toolLeftStyle, toolRightStyle } from '../assets/styles/pages/DrawBoardStyles';
 import NicknameModal from '../components/NicknameModal';
+import { SocketContext } from '../contexts/WebSocketContext';
+import ChatBox from '../components/ChatBox';
 
 interface Point {
   x: number
@@ -21,12 +22,6 @@ interface LinesItem {
   opacity?: number
 }
 
-interface ChatMsgItem {
-  message: string
-  isSender: boolean
-  nickname: string
-}
-
 interface UserInfoType {
   nickname: string
   room: {
@@ -35,14 +30,14 @@ interface UserInfoType {
   }
 }
 
-const socket = io('http://localhost:8080');
-
 export default function Board() {
+  const socket = useContext(SocketContext);
+
   const [userInfo, setUserInfo] = useState({
     nickname: '',
     room: {
       roomId: '',
-      name: '',
+      roomName: '',
     },
   });
 
@@ -57,47 +52,29 @@ export default function Board() {
   const [stabilizer, setStabilizer] = useState(10);
   const [shape, setShape] = useState(100);
 
-  const [chatData, setChatData] = useState<ChatMsgItem[]>([]);
-  const [chatMsg, setChatMsg] = useState('');
-
-  const [isOpenModal, setIsOpenModal] = useState(true);
+  const [isOpenModal, setIsOpenModal] = useState(false);
 
   useEffect(() => {
-    if (userInfo.nickname) {
-      // TODO: 로컬스토리지에 저장된 닉네임 가져오기
+    const savedNickname = localStorage.getItem('nickname');
+
+    if (!savedNickname) {
       setIsOpenModal(true);
     }
 
-    socket.on('getMessage', handleGetMessage);
     socket.on('getDrawLines', (data) => {
       setLines(data);
     });
 
-    // 언마운트될 때 종료
     return () => {
-      socket.off('getMessage', handleGetMessage);
       socket.off('getDrawLines', (data) => {
         setLines(data);
       });
 
-      if (socket.connected) {
-        socket.disconnect();
-      }
+      // if (socket.connected) {
+      //   socket.disconnect();
+      // }
     };
   }, []);
-
-  useEffect(() => {
-    const chatBox = document.querySelector('.chatBox');
-    if (chatBox) {
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-  }, [chatData]);
-
-  const handleGetMessage = (data) => {
-    const { id, nickname, message } = data;
-    const isSender = socket.id === id;
-    setChatData((prevChatData) => [...prevChatData, { isSender, message, nickname }]);
-  };
 
   /**
    * 그림판 클릭(터치) 시작 시 액션
@@ -183,25 +160,8 @@ export default function Board() {
     setLines([]);
   };
 
-  const handleChat = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if(e.key && e.key === 'Enter') {
-      sendChatMessage();
-    }
-  };
-
-  const sendChatMessage = () => {
-    socket.emit('sendMessage', chatMsg);
-    setChatMsg('');
-  };
-
-  // const openModal = () => {
-  //   setIsOpenModal(true);
-  // };
-
   const closeModal = (nickname?: string) => {
-    socket.emit('setInit', {nickname, id: socket.id }, (response: UserInfoType) => {
-      setUserInfo(response);
-    });
+    socket.emit('setNickname', nickname);
 
     setIsOpenModal(false);
   };
@@ -318,24 +278,7 @@ export default function Board() {
             </label>
           </div>
 
-          <div className="chatContainer" css={chatStyle}>
-            <div className="chatBox">
-              {chatData.length > 0 &&
-                chatData.map((item, i) => (
-                  <div className={item.isSender ? 'color-blue' : ''} key={i}>{item.nickname}: {item.message}</div>
-                ))
-              }
-            </div>
-            <div className="inputBox">
-              <textarea
-                value={chatMsg}
-                placeholder="메세지를 입력해주세요."
-                onKeyUp={handleChat} onChange={e => setChatMsg(e.target.value)}
-              >
-              </textarea>
-              <button type="button" onClick={sendChatMessage}>전송</button>
-            </div>
-          </div>
+          <ChatBox />
         </div>
       </div>
 

@@ -56,7 +56,7 @@ export default function NicknameModal({ width, height, isOpen, onClose }: Nickna
     <Modal width={width} height={height}>
       <div css={modalStyle}>
         <span>사용할 닉네임을 입력해주세요.</span>
-
+        {/* [기존닉네임]님으로 입장하시겠습니까? */}
         <input
           type="text"
           name="chatMsg"
@@ -67,7 +67,7 @@ export default function NicknameModal({ width, height, isOpen, onClose }: Nickna
         />
         <button
           type="button"
-          onClick={() => onClose(nickname)}>입장하기
+          onClick={() => onClose(nickname)}>사용하기
         </button>
       </div>
     </Modal>
