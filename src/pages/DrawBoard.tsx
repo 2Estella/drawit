@@ -5,9 +5,9 @@ import { KonvaEventObject } from 'konva/lib/Node';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faEraser, faArrowRotateRight, faArrowRotateLeft, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { boardStyle, containerStyle, toolLeftStyle, toolRightStyle } from '../assets/styles/pages/DrawBoardStyles';
-import NicknameModal from '../components/NicknameModal';
 import { SocketContext } from '../contexts/WebSocketContext';
 import ChatBox from '../components/ChatBox';
+import { useNavigate } from 'react-router-dom';
 
 interface Point {
   x: number
@@ -22,24 +22,9 @@ interface LinesItem {
   opacity?: number
 }
 
-interface UserInfoType {
-  nickname: string
-  room: {
-    roomId: string
-    name: string
-  }
-}
-
 export default function Board() {
   const socket = useContext(SocketContext);
-
-  const [userInfo, setUserInfo] = useState({
-    nickname: '',
-    room: {
-      roomId: '',
-      roomName: '',
-    },
-  });
+  const navigate = useNavigate();
 
   const isDrawing = useRef(false);
   const [color, setColor] = useState<string>('#000');
@@ -52,13 +37,15 @@ export default function Board() {
   const [stabilizer, setStabilizer] = useState(10);
   const [shape, setShape] = useState(100);
 
-  const [isOpenModal, setIsOpenModal] = useState(false);
-
   useEffect(() => {
-    const savedNickname = localStorage.getItem('nickname');
+    const savedRoomId = localStorage.getItem('roomId') ?? '';
+    const savedNickname = localStorage.getItem('nickname') ?? '알수없음';
 
-    if (!savedNickname) {
-      setIsOpenModal(true);
+    if (savedRoomId) {
+      socket.emit('setNickname', savedNickname);
+      // socket.emit('enterRoom', savedRoomId);
+    } else {
+      navigate('/');
     }
 
     socket.on('getDrawLines', (data) => {
@@ -158,12 +145,6 @@ export default function Board() {
   const handleReset = () => {
     setHistory([lines]);
     setLines([]);
-  };
-
-  const closeModal = (nickname?: string) => {
-    socket.emit('setNickname', nickname);
-
-    setIsOpenModal(false);
   };
 
   return (
@@ -281,13 +262,6 @@ export default function Board() {
           <ChatBox />
         </div>
       </div>
-
-      <NicknameModal
-        width={'350px'}
-        height={'250px'}
-        isOpen={isOpenModal}
-        onClose={closeModal}
-      />
     </>
   );
 }
