@@ -1,21 +1,31 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { css } from '@emotion/react';
 import Modal from './common/Modal';
 import { Common } from '../assets/styles/Common';
+import { SocketContext } from '../contexts/WebSocketContext';
 
 interface NicknameModalProps {
   width: string
   height: string
   isOpen: boolean
-  onClose: (nickname?: string) => void
+  onClose: () => void
 }
 export default function NicknameModal({ width, height, isOpen, onClose }: NicknameModalProps) {
+  const socket = useContext(SocketContext);
+
   const [nickname, setNickname] = useState('');
 
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if(e.key && e.key === 'Enter') {
-      onClose(nickname);
+      closeModal();
     }
+  };
+
+  const closeModal = () => {
+    localStorage.setItem('nickname', nickname);
+    socket.emit('setNickname', nickname);
+
+    onClose();
   };
 
   const modalStyle = css`
@@ -67,7 +77,7 @@ export default function NicknameModal({ width, height, isOpen, onClose }: Nickna
         />
         <button
           type="button"
-          onClick={() => onClose(nickname)}>사용하기
+          onClick={closeModal}>사용하기
         </button>
       </div>
     </Modal>
