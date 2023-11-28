@@ -5,22 +5,28 @@ import NicknameModal from '../components/NicknameModal';
 import RoomModal from '../components/RoomModal';
 import { SocketContext } from '../contexts/WebSocketContext';
 
+interface RoomListItem {
+  roomId: string
+  roomName: string
+  members: number
+}
+
 export default function Lobby() {
   const socket = useContext(SocketContext);
   const navigate = useNavigate();
 
   const [isOpenNicknameModal, setIsOpenNicknameModal] = useState(false);
   const [isOpenModal, setIsOpenModal] = useState(false);
-  const [roomList, setRoomList] = useState([]);
-  const [roomId, setRoomId] = useState('');
+  const [roomList, setRoomList] = useState<RoomListItem[]>([]);
+  const [roomInfo, setRoomInfo] = useState<RoomListItem>({ roomId: '', roomName: '', members: 0 });
 
   const fetchRoomList = () => {
     socket.emit('setInit', { nickname: '', id: socket.id });
 
     socket.on('getRoomList', (rooms) => {
-      rooms = Object.entries(rooms).map(([_, value]) => value);
+      rooms = Object.entries(rooms).map(([, value]) => value);
 
-      const newRoomList = rooms.filter(room => room.roomId !== 'room:lobby');
+      const newRoomList = rooms.filter((room: { roomId: string; }) => room.roomId !== 'room:lobby');
 
       setRoomList(newRoomList);
     });
@@ -29,26 +35,42 @@ export default function Lobby() {
   useEffect(() => {
     fetchRoomList();
 
+    //   // 방 멤버 수가 갱신되었을 때 처리
+    // socket.on('updateRoomMembers', ({ roomId, members }) => {
+    //   // roomId에 해당하는 방의 멤버 수를 갱신
+    //   setRoomList((prevRoomList) =>
+    //     prevRoomList.map((room) =>
+    //       room.roomId === roomId ? { ...room, members } : room
+    //     )
+    //   );
+    // });
+
     return () => {
       socket.off('getRoomList');
+      // socket.off('updateRoomMembers');
     };
   }, []);
 
-  const enterRoom = (roomId: string, members: number) => {
+  const enterRoom = (roomInfo: RoomListItem) => {
+    const { members, roomName, roomId } = roomInfo;
     if (members >= 4) {
       alert('입장할 수 있는 인원을 초과하였습니다.');
 
       return;
     }
 
-    setRoomId(roomId);
+    setRoomInfo(roomInfo);
 
-    const savedNickname = localStorage.getItem('nickname') ?? '';
+    console.log('roomInfo', roomInfo);
+
+    const savedNickname = localStorage.getItem('nickname');
 
     if (savedNickname) {
       localStorage.setItem('roomId', roomId);
+      localStorage.setItem('roomName', roomName);
+
       socket.emit('setNickname', savedNickname);
-      socket.emit('enterRoom', roomId);
+      socket.emit('enterRoom', { roomId, roomName });
       navigate('/drawBoard');
 
     } else {
@@ -59,8 +81,10 @@ export default function Lobby() {
   const onCloseNicknameModal = () => {
     setIsOpenNicknameModal(false);
 
-    localStorage.setItem('roomId', roomId);
-    socket.emit('enterRoom', roomId);
+    localStorage.setItem('roomId', roomInfo.roomId);
+    localStorage.setItem('roomName', roomInfo.roomName);
+
+    socket.emit('enterRoom', roomInfo);
     navigate('/drawBoard');
   };
 
@@ -89,7 +113,7 @@ export default function Lobby() {
             )}
             {roomList.length > 0 &&
               roomList.map((room, i) => (
-                <tr key={i} onClick={() => enterRoom(room.roomId, room.members)}>
+                <tr key={i} onClick={() => enterRoom(room)}>
                   <td>{i + 1}</td>
                   <td>{room.roomName}</td>
                   <td>{room.members}/4</td>

@@ -21,6 +21,7 @@ export default function RoomModal({ width, height, isOpen, onClose }: NicknameMo
 
   const createRoom = () => {
     localStorage.setItem('nickname', nickname);
+    localStorage.setItem('roomName', roomName);
 
     socket.emit('createRoom', { nickname, roomName }, (response) => {
       if (response.error) {

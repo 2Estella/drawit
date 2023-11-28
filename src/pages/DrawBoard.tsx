@@ -8,6 +8,7 @@ import { boardStyle, containerStyle, toolLeftStyle, toolRightStyle } from '../as
 import { SocketContext } from '../contexts/WebSocketContext';
 import ChatBox from '../components/ChatBox';
 import { useNavigate } from 'react-router-dom';
+import useCustomBack from '../hooks/useCustomBack';
 
 interface Point {
   x: number
@@ -26,6 +27,17 @@ export default function Board() {
   const socket = useContext(SocketContext);
   const navigate = useNavigate();
 
+  const exitRoom = () => {
+    socket.emit('exitRoom', ({result}: {result: string}) => {
+      console.log('result', result);
+      if (result === 'success') {
+        navigate('/');
+      }
+    });
+  };
+
+  useCustomBack(exitRoom);
+
   const isDrawing = useRef(false);
   const [color, setColor] = useState<string>('#000');
   const [tool, setTool] = useState<string>('pen');
@@ -38,12 +50,13 @@ export default function Board() {
   const [shape, setShape] = useState(100);
 
   useEffect(() => {
-    const savedRoomId = localStorage.getItem('roomId') ?? '';
-    const savedNickname = localStorage.getItem('nickname') ?? '알수없음';
+    const savedRoomId = localStorage.getItem('roomId');
+    const savedRoomName = localStorage.getItem('roomName');
+    const savedNickname = localStorage.getItem('nickname');
 
     if (savedRoomId) {
       socket.emit('setNickname', savedNickname);
-      // socket.emit('enterRoom', savedRoomId);
+      // socket.emit('enterRoom', {roomId: savedRoomId, roomName: savedRoomName});
     } else {
       navigate('/');
     }
