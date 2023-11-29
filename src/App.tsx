@@ -5,6 +5,7 @@ import GlobalStyle from './assets/styles/GlobalStyle';
 import { socket, SocketContext } from './contexts/WebSocketContext';
 import Lobby from './pages/lobby';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import ErrorMessage from './components/common/ErrorMessage';
 
 export default function App() {
   return (
@@ -16,6 +17,8 @@ export default function App() {
             <Route path="/" element={<Lobby />} />
             <Route path="/drawBoard" element={<DrawBoard />} />
           </Routes>
+
+          <ErrorMessage />
         </div>
       </SocketContext.Provider>
     </BrowserRouter>
