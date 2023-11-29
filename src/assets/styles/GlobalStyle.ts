@@ -15,6 +15,19 @@ const GlobalStyle = css`
     justify-content: center;
     color: #595959;
   }
+
+  // 스크롤바 커스텀
+  .scrollBar::-webkit-scrollbar {
+    width: 6px;  /* 스크롤바의 너비 */
+  }
+  .scrollBar::-webkit-scrollbar-thumb {
+    height: 30%; /* 스크롤바의 길이 */
+    background: #6D6A6A; /* 스크롤바의 색상 */
+    border-radius: 10px;
+  }
+  .scrollBar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);  /*스크롤바 뒷 배경 색상*/
+  }
 `;
 
 export default GlobalStyle;
