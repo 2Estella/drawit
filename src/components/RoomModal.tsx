@@ -27,7 +27,6 @@ export default function RoomModal({ width, height, isOpen, onClose }: NicknameMo
       if (response.error) {
         console.error('Error createRoom:', response.error);
       } else {
-        console.log('response: ', response);
         navigate('/drawBoard');
       }
     });

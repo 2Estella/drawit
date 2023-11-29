@@ -35,19 +35,8 @@ export default function Lobby() {
   useEffect(() => {
     fetchRoomList();
 
-    //   // 방 멤버 수가 갱신되었을 때 처리
-    // socket.on('updateRoomMembers', ({ roomId, members }) => {
-    //   // roomId에 해당하는 방의 멤버 수를 갱신
-    //   setRoomList((prevRoomList) =>
-    //     prevRoomList.map((room) =>
-    //       room.roomId === roomId ? { ...room, members } : room
-    //     )
-    //   );
-    // });
-
     return () => {
       socket.off('getRoomList');
-      // socket.off('updateRoomMembers');
     };
   }, []);
 
@@ -60,8 +49,6 @@ export default function Lobby() {
     }
 
     setRoomInfo(roomInfo);
-
-    console.log('roomInfo', roomInfo);
 
     const savedNickname = localStorage.getItem('nickname');
 
