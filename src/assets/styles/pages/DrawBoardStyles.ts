@@ -4,6 +4,7 @@ import { Common } from '../Common';
 export const containerStyle = css`
   display: flex;
   height: 100vh;
+  overflow: hidden;
 `;
 
 export const toolLeftStyle = css`
@@ -21,8 +22,13 @@ export const toolLeftStyle = css`
     color: ${Common.colors.toolText};
     width: 25px;
     height: 25px;
-    padding: 5px;
+    padding: 6px;
     cursor: pointer;
+
+    &.on {
+      background: #7c7c7c3f;
+      border-radius: 50%;
+    }
   }
 `;
 
@@ -64,10 +70,6 @@ export const toolRightStyle = css`
         width: calc(100% - 70px);
         background: #ccc;
         border-radius: 5px;
-
-        // &:focus {
-        //   outline: none;
-        // }
       }
 
       input[type="range"]::-webkit-slider-runnable-track {
@@ -91,11 +93,11 @@ export const toolRightStyle = css`
 `;
 
 export const boardStyle = css`
-  width: 68%;
-  min-width: 1000px;
-  flex: 1 0 0;
+  width: 100%;
+  flex: 1;
   padding: 80px 30px 30px;
   background: ${Common.colors.boardBackground};
+  overflow: auto;
 
   .board {
     width: 800px;
@@ -107,14 +109,47 @@ export const boardStyle = css`
 `;
 
 export const chatStyle = css`
+  padding: 20px 10px;
   background: #7C7C7C;
   height: 353px;
-  padding: 20px 10px;
 
   .chatBox {
-    background: #fff;
+    position: relative;
     height: 21vh;
-    overflow-y: scroll;
+    padding: 2px;
+    background: #fff;
+    overflow-y: auto;
+    font-size: 14px;
+    border-radius: 5px;
+
+    // 안내 메세지 스타일
+    .info {
+      font-size: 12px;
+    }
+
+    .message {
+      display: inline-block;
+      max-width: 80%;
+      margin: 2px;
+      padding: 2px 4px;
+      color: #6D6A6A;
+      background: #EEEEEE;
+      border-radius: 5px;
+      word-break: break-all;
+    }
+
+    // 보낸 메세지 스타일
+    .outgoingMsg {
+      width: 100%;
+      text-align: right;
+
+      .message {
+        padding: 3px 5px;
+        color: #217af4;
+        background: rgba(33, 122, 244, .1);
+        text-align: left;
+      }
+    }
   }
 
   .inputBox {
@@ -144,9 +179,5 @@ export const chatStyle = css`
       color: #fff;
       font-size: 14px;
     }
-  }
-
-  .color-blue {
-    color: blue;
   }
 `;

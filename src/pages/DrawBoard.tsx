@@ -27,17 +27,6 @@ export default function Board() {
   const socket = useContext(SocketContext);
   const navigate = useNavigate();
 
-  const exitRoom = () => {
-    socket.emit('exitRoom', ({result}: {result: string}) => {
-      console.log('result', result);
-      if (result === 'success') {
-        navigate('/');
-      }
-    });
-  };
-
-  useCustomBack(exitRoom);
-
   const isDrawing = useRef(false);
   const [color, setColor] = useState<string>('#000');
   const [tool, setTool] = useState<string>('pen');
@@ -54,27 +43,36 @@ export default function Board() {
     const savedRoomName = localStorage.getItem('roomName');
     const savedNickname = localStorage.getItem('nickname');
 
-    if (savedRoomId) {
+    if (savedRoomId && savedRoomName) {
       socket.emit('setNickname', savedNickname);
-      // socket.emit('enterRoom', {roomId: savedRoomId, roomName: savedRoomName});
-    } else {
+      socket.emit('enterRoom', { roomId: savedRoomId, roomName: savedRoomName });
+  } else {
       navigate('/');
     }
 
-    socket.on('getDrawLines', (data) => {
+    const handleDrawLines = (data) => {
       setLines(data);
-    });
+    };
+
+    socket.on('getDrawLines', handleDrawLines);
 
     return () => {
-      socket.off('getDrawLines', (data) => {
-        setLines(data);
-      });
-
-      // if (socket.connected) {
-      //   socket.disconnect();
-      // }
+      socket.off('getDrawLines', handleDrawLines);
     };
-  }, []);
+  }, [navigate, socket]);
+
+
+  /**
+   * 뒤로가기 시 방 퇴장 처리
+   */
+  const exitRoom = () => {
+    socket.emit('exitRoom', ({result}: {result: string}) => {
+      if (result === 'success') {
+        navigate('/');
+      }
+    });
+  };
+  useCustomBack(exitRoom);
 
   /**
    * 그림판 클릭(터치) 시작 시 액션
@@ -82,6 +80,11 @@ export default function Board() {
    */
   const handleMouseDown = (e: KonvaEventObject<MouseEvent> | KonvaEventObject<TouchEvent>) => {
     isDrawing.current = true;
+
+    if (!tool) {
+      setTool('pen');
+    }
+
     const pos = e.target.getStage()?.getPointerPosition() ?? {x: 0, y: 0};
 
     setLines([...lines, { tool, points: [{x: pos.x , y: pos.y}] }]);
@@ -119,12 +122,17 @@ export default function Board() {
     isDrawing.current = false;
     // 그려진 라인 서버로 전달
     socket.emit('sendDrawLines', lines);
+
+    // 되돌리기 초기화
+    setHistory([]);
   };
 
   /**
    * 그리기 되돌리기
    */
   const handleUndo = () => {
+    setTool('');
+
     if (!lines.length) {
       return;
     }
@@ -140,6 +148,8 @@ export default function Board() {
    * 그리기 실행취소
    */
   const handleRedo = () => {
+    setTool('');
+
     if (!history.length) {
       return;
     }
@@ -156,6 +166,7 @@ export default function Board() {
    * 그림 전체 삭제
    */
   const handleReset = () => {
+    setTool('');
     setHistory([lines]);
     setLines([]);
   };
@@ -166,11 +177,13 @@ export default function Board() {
         <div className="toolLeft" css={toolLeftStyle}>
           <FontAwesomeIcon
             icon={faPen}
-            onClick={() => [setTool('pen'), setHistory(history.slice(0, history.length - 1))]}
+            className={tool === 'pen' ? 'on' : ''}
+            onClick={() => [setTool('pen')]}
           />
           <FontAwesomeIcon
             icon={faEraser}
-            onClick={() => [setTool('eraser'), setHistory(history.slice(0, history.length - 1))]}
+            className={tool === 'eraser' ? 'on' : ''}
+            onClick={() => [setTool('eraser')]}
           />
           <FontAwesomeIcon
             icon={faArrowRotateLeft}
@@ -186,7 +199,7 @@ export default function Board() {
           />
         </div>
 
-        <div css={boardStyle}>
+        <div className="scrollBar" css={boardStyle}>
           <Stage
             className="board"
             width={window.innerWidth}

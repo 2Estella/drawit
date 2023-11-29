@@ -26,12 +26,8 @@ export default function ChatBox() {
 
     return () => {
       socket.off('getMessage', handleGetMessage);
-
-      // if (socket.connected) {
-      //   socket.disconnect();
-      // }
     };
-  }, []);
+  }, [socket]);
 
   useEffect(() => {
     const chatBox = document.querySelector('.chatBox');
@@ -41,28 +37,46 @@ export default function ChatBox() {
   }, [chatData]);
 
   const handleChat = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if(e.key && e.key === 'Enter') {
+    if(e.key === 'Enter') {
       sendChatMessage();
     }
   };
 
   const sendChatMessage = () => {
-    socket.emit('sendMessage', chatMsg);
-    setChatMsg('');
+    if (chatMsg.trim() !== '') {
+      socket.emit('sendMessage', chatMsg);
+      setChatMsg('');
+    }
   };
 
   return (
     <div className="chatContainer" css={chatStyle}>
-      <div className="chatBox">
+      <div className="chatBox scrollBar">
         {chatData.length > 0 &&
           chatData.map((item, i) => (
-            <div className={item.isSender ? 'color-blue' : ''} key={i}>{item.nickname}: {item.message}</div>
-          ))
-        }
+            <div className={item.isSender ? 'outgoingMsg' : ''} key={i}>
+              {item.nickname === '안내' ? (
+                <span className="info">
+                  [{item.nickname}] {item.message}
+                </span>
+              ) : (
+                <>
+                  {item.isSender ? (
+                    <span className="message">{item.message}</span>
+                    ) : (
+                    <span className="message">{item.nickname}: {item.message}</span>
+                  )}
+                </>
+              )}
+            </div>
+          ))}
       </div>
+
       <div className="inputBox">
         <textarea
+          className="scrollBar"
           value={chatMsg}
+          maxLength={70}
           placeholder="메세지를 입력해주세요."
           onKeyUp={handleChat} onChange={e => setChatMsg(e.target.value)}
         >
