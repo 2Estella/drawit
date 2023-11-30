@@ -13,6 +13,8 @@ interface NicknameModalProps {
 }
 
 export default function RoomModal({ width, height, isOpen, onClose }: NicknameModalProps) {
+  //@@
+  // localStorage.removeItem('roomId');
   const socket = useContext(SocketContext);
   const navigate = useNavigate();
 
@@ -27,6 +29,9 @@ export default function RoomModal({ width, height, isOpen, onClose }: NicknameMo
       if (response.error) {
         console.error('Error createRoom:', response.error);
       } else {
+        //@@
+        console.log(response.roomId);
+        localStorage.setItem('roomId', response.roomId);
         navigate('/drawBoard');
       }
     });

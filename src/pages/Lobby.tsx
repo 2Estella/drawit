@@ -21,7 +21,9 @@ export default function Lobby() {
   const [roomInfo, setRoomInfo] = useState<RoomListItem>({ roomId: '', roomName: '', members: 0 });
 
   const fetchRoomList = () => {
-    socket.emit('setInit', { nickname: '', id: socket.id });
+    //@@
+    const savedNickname = localStorage.getItem('nickname') ?? '';
+    socket.emit('setInit', { nickname: savedNickname, id: socket.id });
 
     socket.on('getRoomList', (rooms) => {
       rooms = Object.entries(rooms).map(([, value]) => value);
@@ -57,7 +59,8 @@ export default function Lobby() {
       localStorage.setItem('roomName', roomName);
 
       socket.emit('setNickname', savedNickname);
-      socket.emit('enterRoom', { roomId, roomName });
+      //@@
+      // socket.emit('enterRoom', { roomId, roomName });
       navigate('/drawBoard');
 
     } else {

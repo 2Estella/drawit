@@ -46,9 +46,19 @@ export default function Board() {
     if (savedRoomId && savedRoomName) {
       socket.emit('setNickname', savedNickname);
       socket.emit('enterRoom', { roomId: savedRoomId, roomName: savedRoomName });
-  } else {
-      navigate('/');
     }
+    // else {
+    //   navigate('/');
+    // }
+    // else {
+    //   socket.emit('createRoom', { nickname: savedNickname, roomName: savedRoomName }, (response) => {
+    //       if (response.error) {
+    //         console.error('Error createRoom:', response.error);
+    //       } else {
+    //         // localStorage.setItem('roomId', response.roomId);
+    //       }
+    //     });
+    // }
 
     const handleDrawLines = (data) => {
       setLines(data);
@@ -59,20 +69,20 @@ export default function Board() {
     return () => {
       socket.off('getDrawLines', handleDrawLines);
     };
-  }, [navigate, socket]);
+  }, []);
 
 
   /**
    * 뒤로가기 시 방 퇴장 처리
    */
-  const exitRoom = () => {
-    socket.emit('exitRoom', ({result}: {result: string}) => {
-      if (result === 'success') {
-        navigate('/');
-      }
-    });
-  };
-  useCustomBack(exitRoom);
+  // const exitRoom = () => {
+  //   socket.emit('exitRoom', ({result}: {result: string}) => {
+  //     if (result === 'success') {
+  //       navigate('/');
+  //     }
+  //   });
+  // };
+  // useCustomBack(exitRoom);
 
   /**
    * 그림판 클릭(터치) 시작 시 액션
