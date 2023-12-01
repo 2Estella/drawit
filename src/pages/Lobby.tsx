@@ -21,7 +21,6 @@ export default function Lobby() {
   const [roomInfo, setRoomInfo] = useState<RoomListItem>({ roomId: '', roomName: '', members: 0 });
 
   const fetchRoomList = () => {
-    //@@
     const savedNickname = localStorage.getItem('nickname') ?? '';
     socket.emit('setInit', { nickname: savedNickname, id: socket.id });
 
@@ -59,7 +58,6 @@ export default function Lobby() {
       localStorage.setItem('roomName', roomName);
 
       socket.emit('setNickname', savedNickname);
-      //@@
       // socket.emit('enterRoom', { roomId, roomName });
       navigate('/drawBoard');
 

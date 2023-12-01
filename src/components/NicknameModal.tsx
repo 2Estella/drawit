@@ -28,35 +28,6 @@ export default function NicknameModal({ width, height, isOpen, onClose }: Nickna
     onClose();
   };
 
-  const modalStyle = css`
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    height: 100%;
-
-    span {
-      display: block;
-      margin: 20px 0;
-    }
-
-    input[type='text'] {
-      width: 90%;
-      height: 35px;
-      border: none;
-      border-bottom: 1px solid ${Common.colors.colorPickerBackground};
-    }
-
-    button {
-      width: 100%;
-      margin: 20px 0 15px;
-      padding: 10px 20px;
-      border: 1px solid ${Common.colors.colorPickerBackground};
-      border-radius: 5px;
-      background: ${Common.colors.colorPickerBackground};
-      color: #fff;
-    }
-  `;
 
   if (!isOpen) {
     return null;
@@ -66,7 +37,7 @@ export default function NicknameModal({ width, height, isOpen, onClose }: Nickna
     <Modal width={width} height={height}>
       <div css={modalStyle}>
         <span>사용할 닉네임을 입력해주세요.</span>
-        {/* [기존닉네임]님으로 입장하시겠습니까? */}
+        {/* TODO: 닉네임 재설정 안내창 - [기존닉네임]님으로 입장하시겠습니까? */}
         <input
           type="text"
           name="chatMsg"
@@ -83,3 +54,33 @@ export default function NicknameModal({ width, height, isOpen, onClose }: Nickna
     </Modal>
   );
 }
+
+const modalStyle = css`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+
+  span {
+    display: block;
+    margin: 20px 0;
+  }
+
+  input[type='text'] {
+    width: 90%;
+    height: 35px;
+    border: none;
+    border-bottom: 1px solid ${Common.colors.colorPickerBackground};
+  }
+
+  button {
+    width: 100%;
+    margin: 20px 0 15px;
+    padding: 10px 20px;
+    border: 1px solid ${Common.colors.colorPickerBackground};
+    border-radius: 5px;
+    background: ${Common.colors.colorPickerBackground};
+    color: #fff;
+  }
+`;

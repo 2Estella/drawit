@@ -12,8 +12,12 @@ interface NicknameModalProps {
   onClose: () => void
 }
 
+interface CreateRoomRes {
+  roomId: string
+  roomName: string
+}
+
 export default function RoomModal({ width, height, isOpen, onClose }: NicknameModalProps) {
-  //@@
   // localStorage.removeItem('roomId');
   const socket = useContext(SocketContext);
   const navigate = useNavigate();
@@ -25,62 +29,11 @@ export default function RoomModal({ width, height, isOpen, onClose }: NicknameMo
     localStorage.setItem('nickname', nickname);
     localStorage.setItem('roomName', roomName);
 
-    socket.emit('createRoom', { nickname, roomName }, (response) => {
-      if (response.error) {
-        console.error('Error createRoom:', response.error);
-      } else {
-        //@@
-        console.log(response.roomId);
-        localStorage.setItem('roomId', response.roomId);
-        navigate('/drawBoard');
-      }
+    socket.emit('createRoom', { nickname, roomName }, (response: CreateRoomRes) => {
+      localStorage.setItem('roomId', response.roomId);
+      navigate('/drawBoard');
     });
   };
-
-  const modalStyle = css`
-    label {
-      width: 100%;
-      display: inline-block;
-      margin-top: 10px;
-
-      span {
-        font-size: 13px;
-        font-weight: bold;
-      }
-
-      input[type='text'] {
-        width: 100%;
-        height: 35px;
-        border: none;
-        border-bottom: 1px solid ${Common.colors.colorPickerBackground};
-      }
-    }
-
-    .buttonBox {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-
-      button {
-        width: 49%;
-        margin: 20px 0 15px;
-        padding: 10px 20px;
-        border: 1px solid ${Common.colors.colorPickerBackground};
-        border-radius: 5px;
-        background: ${Common.colors.colorPickerBackground};
-        color: #fff;
-
-        &:first-of-type {
-          background: #ccc;
-          border: 0;
-
-          &:hover {
-            background: ${Common.colors.colorPickerBackground};
-          }
-        }
-      }
-    }
-  `;
 
   if (!isOpen) {
     return null;
@@ -122,3 +75,49 @@ export default function RoomModal({ width, height, isOpen, onClose }: NicknameMo
     </Modal>
   );
 }
+
+
+const modalStyle = css`
+  label {
+    width: 100%;
+    display: inline-block;
+    margin-top: 10px;
+
+    span {
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    input[type='text'] {
+      width: 100%;
+      height: 35px;
+      border: none;
+      border-bottom: 1px solid ${Common.colors.colorPickerBackground};
+    }
+  }
+
+  .buttonBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+
+    button {
+      width: 49%;
+      margin: 20px 0 15px;
+      padding: 10px 20px;
+      border: 1px solid ${Common.colors.colorPickerBackground};
+      border-radius: 5px;
+      background: ${Common.colors.colorPickerBackground};
+      color: #fff;
+
+      &:first-of-type {
+        background: #ccc;
+        border: 0;
+
+        &:hover {
+          background: ${Common.colors.colorPickerBackground};
+        }
+      }
+    }
+  }
+`;

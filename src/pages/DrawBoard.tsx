@@ -7,8 +7,6 @@ import { faPen, faEraser, faArrowRotateRight, faArrowRotateLeft, faTrashCan } fr
 import { boardStyle, containerStyle, toolLeftStyle, toolRightStyle } from '../assets/styles/pages/DrawBoardStyles';
 import { SocketContext } from '../contexts/WebSocketContext';
 import ChatBox from '../components/ChatBox';
-import { useNavigate } from 'react-router-dom';
-import useCustomBack from '../hooks/useCustomBack';
 
 interface Point {
   x: number
@@ -25,7 +23,6 @@ interface LinesItem {
 
 export default function Board() {
   const socket = useContext(SocketContext);
-  const navigate = useNavigate();
 
   const isDrawing = useRef(false);
   const [color, setColor] = useState<string>('#000');
@@ -47,20 +44,8 @@ export default function Board() {
       socket.emit('setNickname', savedNickname);
       socket.emit('enterRoom', { roomId: savedRoomId, roomName: savedRoomName });
     }
-    // else {
-    //   navigate('/');
-    // }
-    // else {
-    //   socket.emit('createRoom', { nickname: savedNickname, roomName: savedRoomName }, (response) => {
-    //       if (response.error) {
-    //         console.error('Error createRoom:', response.error);
-    //       } else {
-    //         // localStorage.setItem('roomId', response.roomId);
-    //       }
-    //     });
-    // }
 
-    const handleDrawLines = (data) => {
+    const handleDrawLines = (data: LinesItem[]) => {
       setLines(data);
     };
 
@@ -70,7 +55,6 @@ export default function Board() {
       socket.off('getDrawLines', handleDrawLines);
     };
   }, []);
-
 
   /**
    * 뒤로가기 시 방 퇴장 처리
