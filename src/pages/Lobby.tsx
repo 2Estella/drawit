@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { lobbyContainerStyle } from '../assets/styles/pages/LobbyStyles';
 import NicknameModal from '../components/NicknameModal';
 import RoomModal from '../components/RoomModal';
+import Typewriter from '../components/Typewriter';
 import { SocketContext } from '../contexts/WebSocketContext';
 
 interface RoomListItem {
@@ -20,26 +21,26 @@ export default function Lobby() {
   const [roomList, setRoomList] = useState<RoomListItem[]>([]);
   const [roomInfo, setRoomInfo] = useState<RoomListItem>({ roomId: '', roomName: '', members: 0 });
 
-  const fetchRoomList = () => {
-    const savedNickname = localStorage.getItem('nickname') ?? '';
-    socket.emit('setInit', { nickname: savedNickname, id: socket.id });
-
-    socket.on('getRoomList', (rooms) => {
-      rooms = Object.entries(rooms).map(([, value]) => value);
-
-      const newRoomList = rooms.filter((room: { roomId: string; }) => room.roomId !== 'room:lobby');
-
-      setRoomList(newRoomList);
-    });
-  };
-
   useEffect(() => {
+    const fetchRoomList = () => {
+      const savedNickname = localStorage.getItem('nickname') ?? '';
+      socket.emit('setInit', { nickname: savedNickname, id: socket.id });
+
+      socket.on('getRoomList', (rooms) => {
+        rooms = Object.entries(rooms).map(([, value]) => value);
+
+        const newRoomList = rooms.filter((room: { roomId: string; }) => room.roomId !== 'room:lobby');
+
+        setRoomList(newRoomList);
+      });
+    };
+
     fetchRoomList();
 
     return () => {
       socket.off('getRoomList');
     };
-  }, []);
+  }, [socket]);
 
   const enterRoom = (roomInfo: RoomListItem) => {
     const { members, roomName, roomId } = roomInfo;
@@ -78,6 +79,9 @@ export default function Lobby() {
 
   return (
     <div className="LobbyContainer" css={lobbyContainerStyle}>
+      <div className="titleBox">
+        <Typewriter text="Drawit!" delay={400} infinite />
+      </div>
       <div className="buttonBox">
         <button type="button" onClick={() => setIsOpenModal(true)}>
           방만들기
@@ -88,7 +92,7 @@ export default function Lobby() {
           <thead>
             <tr>
               <th>no.</th>
-              <th className='title'>제목</th>
+              <th className="title">제목</th>
               <th>인원</th>
               <th>비고</th>
             </tr>
