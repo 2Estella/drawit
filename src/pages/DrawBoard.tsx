@@ -54,7 +54,7 @@ export default function Board() {
     return () => {
       socket.off('getDrawLines', handleDrawLines);
     };
-  }, []);
+  }, [socket]);
 
   /**
    * 뒤로가기 시 방 퇴장 처리
@@ -114,7 +114,7 @@ export default function Board() {
    */
   const handleMouseUp = () => {
     isDrawing.current = false;
-    // 그려진 라인 서버로 전달
+
     socket.emit('sendDrawLines', lines);
 
     // 되돌리기 초기화

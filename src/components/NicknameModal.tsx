@@ -10,6 +10,7 @@ interface NicknameModalProps {
   isOpen: boolean
   onClose: () => void
 }
+
 export default function NicknameModal({ width, height, isOpen, onClose }: NicknameModalProps) {
   const socket = useContext(SocketContext);
 
@@ -27,7 +28,6 @@ export default function NicknameModal({ width, height, isOpen, onClose }: Nickna
 
     onClose();
   };
-
 
   if (!isOpen) {
     return null;
@@ -71,16 +71,16 @@ const modalStyle = css`
     width: 90%;
     height: 35px;
     border: none;
-    border-bottom: 1px solid ${Common.colors.colorPickerBackground};
+    border-bottom: 1px solid ${Common.colors.grey300};
   }
 
   button {
     width: 100%;
     margin: 20px 0 15px;
     padding: 10px 20px;
-    border: 1px solid ${Common.colors.colorPickerBackground};
+    border: 1px solid ${Common.colors.grey300};
     border-radius: 5px;
-    background: ${Common.colors.colorPickerBackground};
-    color: #fff;
+    background: ${Common.colors.grey300};
+    color: ${Common.colors.white};
   }
 `;

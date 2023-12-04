@@ -92,7 +92,7 @@ const modalStyle = css`
       width: 100%;
       height: 35px;
       border: none;
-      border-bottom: 1px solid ${Common.colors.colorPickerBackground};
+      border-bottom: 1px solid ${Common.colors.grey300};
     }
   }
 
@@ -105,17 +105,17 @@ const modalStyle = css`
       width: 49%;
       margin: 20px 0 15px;
       padding: 10px 20px;
-      border: 1px solid ${Common.colors.colorPickerBackground};
+      border: 1px solid ${Common.colors.grey300};
       border-radius: 5px;
-      background: ${Common.colors.colorPickerBackground};
-      color: #fff;
+      background: ${Common.colors.grey300};
+      color: ${Common.colors.white};
 
       &:first-of-type {
-        background: #ccc;
+        background: ${Common.colors.grey100};
         border: 0;
 
         &:hover {
-          background: ${Common.colors.colorPickerBackground};
+          background: ${Common.colors.grey300};
         }
       }
     }
