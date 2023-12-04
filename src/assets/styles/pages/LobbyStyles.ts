@@ -4,10 +4,18 @@ import { Common } from '../Common';
 export const lobbyContainerStyle = css`
   width: 100%;
   height: 100vh;
-  padding-top: 10vh;
-  // background: ${Common.colors.boardBackground};
+  // padding-top: 10vh;
+  // background: ${Common.colors.grey500};
 
-  .buttonBox {
+  .titleBox {
+    height: 50px;
+    margin: 5vh 0;
+    text-align: center;
+    font-size: 52px;
+    font-weight: bold;
+  }
+
+  & > .buttonBox {
     width: 700px;
     margin: 0 auto;
     text-align: right;
@@ -15,8 +23,8 @@ export const lobbyContainerStyle = css`
     button {
       margin-bottom: 5px;
       padding: 10px 20px;
-      color: #fff;
-      background: #424139;
+      color: ${Common.colors.white};
+      background: ${Common.colors.grey300};
       border-radius: 5px;
       font-size: 15px;
     }
@@ -26,7 +34,7 @@ export const lobbyContainerStyle = css`
     width: 700px;
     height: 600px;
     margin: 0 auto;
-    border: 1px solid #7C7C7C;
+    border: 1px solid ${Common.colors.grey200};
     border-radius: 5px;
 
     table {
@@ -35,8 +43,8 @@ export const lobbyContainerStyle = css`
       font-size: 14px;
 
       thead {
-        color: #fff;
-        background:  #7C7C7C;
+        color: ${Common.colors.white};
+        background: ${Common.colors.grey200};
 
         th {
           width: 15%;
@@ -53,14 +61,14 @@ export const lobbyContainerStyle = css`
       tbody {
         tr {
           cursor: pointer;
-          border-bottom: 1px solid #7C7C7C;
+          border-bottom: 1px solid ${Common.colors.grey200};;
 
-          &:nth-of-type(2n) {
-            // background: #cfcfcf;
-          }
+          // &:nth-of-type(2n) {
+          //   background: ${Common.colors.grey50};
+          // }
 
           &:hover {
-            background: #cfcfcf;
+            background: ${Common.colors.grey50};
           }
         }
 

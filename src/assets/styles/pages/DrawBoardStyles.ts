@@ -16,17 +16,17 @@ export const toolLeftStyle = css`
   align-items: center;
   gap: 10px;
   padding-top: 20px;
-  background: ${Common.colors.toolBackground};
+  background: ${Common.colors.grey400};
 
   svg {
-    color: ${Common.colors.toolText};
+    color: ${Common.colors.grey200};
     width: 25px;
     height: 25px;
     padding: 6px;
     cursor: pointer;
 
     &.on {
-      background: #7c7c7c3f;
+      background: ${Common.colors.grey250};
       border-radius: 50%;
     }
   }
@@ -37,8 +37,8 @@ export const toolRightStyle = css`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: ${Common.colors.toolBackground};
-  color: ${Common.colors.toolText};
+  background: ${Common.colors.grey400};
+  color: ${Common.colors.grey200};
 
   .tools {
     display: flex;
@@ -48,7 +48,7 @@ export const toolRightStyle = css`
 
     .sketch-picker {
       margin-bottom: 5px;
-      background: #7C7C7C !important;
+      background: ${Common.colors.grey200} !important;
     }
 
     label {
@@ -68,7 +68,7 @@ export const toolRightStyle = css`
         -webkit-appearance: none;
         margin: 5px 0;
         width: calc(100% - 70px);
-        background: #ccc;
+        background: ${Common.colors.grey100};
         border-radius: 5px;
       }
 
@@ -77,7 +77,7 @@ export const toolRightStyle = css`
         height: 100%;
         cursor: pointer;
         border-radius: 5px;
-        border: 1px solid #7C7C7C;
+        border: 1px solid ${Common.colors.grey100};
       }
 
       input[type="range"]::-webkit-slider-thumb {
@@ -86,7 +86,7 @@ export const toolRightStyle = css`
         height: 1px;
         background: transport;
         cursor: pointer;
-        box-shadow: -100vw 0 0 100vw #7C7C7C;
+        box-shadow: -100vw 0 0 100vw ${Common.colors.grey200};
       }
     }
   }
@@ -96,28 +96,28 @@ export const boardStyle = css`
   width: 100%;
   flex: 1;
   padding: 80px 30px 30px;
-  background: ${Common.colors.boardBackground};
+  background: ${Common.colors.grey500};
   overflow: auto;
 
   .board {
     width: 800px;
     height: 500px;
     margin: 0 auto;
-    background: #fff;
+    background: ${Common.colors.white};
     overflow: hidden;
   }
 `;
 
 export const chatStyle = css`
   padding: 20px 10px;
-  background: #7C7C7C;
+  background: ${Common.colors.grey200};
   height: 353px;
 
   .chatBox {
     position: relative;
     height: 21vh;
     padding: 2px;
-    background: #fff;
+    background: ${Common.colors.white};
     overflow-y: auto;
     font-size: 14px;
     border-radius: 5px;
@@ -132,8 +132,8 @@ export const chatStyle = css`
       max-width: 80%;
       margin: 2px;
       padding: 2px 4px;
-      color: #6D6A6A;
-      background: #EEEEEE;
+      color: ${Common.colors.grey300};
+      background: ${Common.colors.grey50};
       border-radius: 5px;
       word-break: break-all;
     }
@@ -145,8 +145,8 @@ export const chatStyle = css`
 
       .message {
         padding: 3px 5px;
-        color: #217af4;
-        background: rgba(33, 122, 244, .1);
+        color: ${Common.colors.blue};
+        background: ${Common.colors.blueBg};
         text-align: left;
       }
     }
@@ -175,8 +175,8 @@ export const chatStyle = css`
       margin-top: 10px;
       margin-left: auto;
       padding: 8px;
-      background: ${Common.colors.toolBackground};
-      color: #fff;
+      background: ${Common.colors.grey400};
+      color: ${Common.colors.white};
       font-size: 14px;
     }
   }
