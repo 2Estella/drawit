@@ -157,6 +157,7 @@ export const chatStyle = css`
     flex-direction: column;
     margin-top: 10px;
 
+
     textarea {
       resize: none;
       height: 70px;
@@ -164,20 +165,51 @@ export const chatStyle = css`
       border: 0;
       border-radius: 5px;
       font-size: 13px;
+      outline-color: none;
+
+      &:focus {
+        outline: none !important;
+      }
 
       &::placeholder {
         font-size: 12px;
       }
     }
 
-    button {
-      width: 50px;
+    .buttonArea {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 5px;
       margin-top: 10px;
-      margin-left: auto;
-      padding: 8px;
-      background: ${Common.colors.grey400};
-      color: ${Common.colors.white};
-      font-size: 14px;
+      // background: ${Common.colors.white};
+
+      .emojiBox {
+        position: relative;
+
+        .EmojiPickerReact {
+          position: absolute;
+          top: -450px;
+          left: -350px;
+        }
+      }
+
+      svg {
+        width: 25px;
+        height: 25px;
+      }
+
+      .sendButton {
+        width: 50px;
+        // margin-top: 10px;
+        padding: 8px;
+        background: ${Common.colors.grey400};
+        color: ${Common.colors.white};
+        font-size: 14px;
+      }
     }
+
   }
 `;

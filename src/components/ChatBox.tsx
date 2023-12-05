@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { SocketContext } from '../contexts/WebSocketContext';
 import { chatStyle, } from '../assets/styles/pages/DrawBoardStyles';
+import EmojiPicker, { Emoji, EmojiClickData, EmojiStyle } from 'emoji-picker-react';
 
 interface ChatMsgItem {
   id?: string
@@ -14,6 +15,7 @@ export default function ChatBox() {
 
   const [chatData, setChatData] = useState<ChatMsgItem[]>([]);
   const [chatMsg, setChatMsg] = useState('');
+  const [isShowEmoji, setIsShowEmoji] = useState(false);
 
   useEffect(() => {
     const handleGetMessage = (data: ChatMsgItem) => {
@@ -81,7 +83,32 @@ export default function ChatBox() {
           onKeyUp={handleChat} onChange={e => setChatMsg(e.target.value)}
         >
         </textarea>
-        <button type="button" onClick={sendChatMessage}>전송</button>
+
+        <div className="buttonArea">
+          <div
+            className="emojiBox"
+            onClick={() => setIsShowEmoji(!isShowEmoji)}
+          >
+            <Emoji
+              unified="1f603"
+              size={25}
+              emojiStyle={EmojiStyle.GOOGLE}
+            />
+            {isShowEmoji &&
+              <EmojiPicker
+                onEmojiClick={(emojiData: EmojiClickData) => setChatMsg((prevChatMsg) => prevChatMsg + emojiData.emoji)}
+                emojiStyle={EmojiStyle.GOOGLE}
+              />
+            }
+          </div>
+          <button
+            className="sendButton"
+            type="button"
+            onClick={sendChatMessage}
+          >
+            전송
+          </button>
+        </div>
       </div>
     </div>
   );
